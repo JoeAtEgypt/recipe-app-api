@@ -1,0 +1,43 @@
+## Docker Compose:
+# is a tool that allows us to run our docker image easily from our project location.
+# allows us to easily manage the different services that make up our project.
+    # for example: 1 service might be the Python App that we run and Another Service might be the Database.
+# is a YAML file that contains the configuration for all of the services that make up our project.
+
+# 1st line: is the version of Docker Compose that we're gonna ba writing our file for.
+version: "3"
+
+# Next: we define the services that make up our App. (Python Django App)
+services:
+
+  # service name
+  app:
+
+    # the "build" section of configuration: "context: ." => which is our current dir that we're docker-compose from.
+    build:
+      context: .
+
+    ports:
+      # mapping our project from port 8000 on our host to port 8000 on our image.
+      - "8000:8000"
+
+    # "volumes" allows us to get the updates that we make to our project into our docker image in real time.
+    # it maps volume from our local machine into our docker container that will be running our App.
+    # this means that whenever you change a file or you change sth. in the project,
+    # it'll be automatically updated in the container and you don't need to restart Docker to get the changes into effect
+    volumes:
+      # mapping the "app" dir in local machine to "app" dir in our docker image
+      - ./app:/app
+
+    # finally, we're gonna type the command that is used to run ou app in our docker container.
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8000"
+    # "sh" means we're gonna run the command using shell
+    # "-c" means command
+    # this will run the Django development server ("0.0.0.0" does )available on all IP addresses that run on the docker container.
+    # it's gonna run on port 8000 which is gonna be mapped through the ports configuration to our local machine.
+    # So we can run our app and we can connect to it on port 8000 on our local machine
+
+
+
+
