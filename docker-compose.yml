@@ -10,12 +10,13 @@ version: "3"
 # Next: we define the services that make up our App. (Python Django App)
 services:
 
-  # service name
+  # service name: for Python Django App
   app:
 
     # the "build" section of configuration: "context: ." => which is our current dir that we're docker-compose from.
     build:
       context: .
+      dockerfile: Dockerfile
 
     ports:
       # mapping our project from port 8000 on our host to port 8000 on our image.
@@ -31,13 +32,54 @@ services:
 
     # finally, we're gonna type the command that is used to run ou app in our docker container.
     command: >
-      sh -c "python manage.py runserver 0.0.0.0:8000"
+      sh -c "python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     # "sh" means we're gonna run the command using shell
     # "-c" means command
     # this will run the Django development server ("0.0.0.0" does )available on all IP addresses that run on the docker container.
     # it's gonna run on port 8000 which is gonna be mapped through the ports configuration to our local machine.
     # So we can run our app and we can connect to it on port 8000 on our local machine
 
+    # Adding Environment Variables of "db" to our django app instead of SQLite(default)
+    environment:
+      - DB_HOST=db
+      - DB_NAME=app
+      - DB_USER=postgres
+      - DB_PASS=supersecretpassword
+
+    # adding "depends" on the setting
+    # when you run docker-compose, you can set different services to depend on other services.
+    # we want the "app" service to depend on the "db" service.
+    # 1. the "db" service will start before the "app" service.
+    # 2. the "db" service will be available via the network when you use the hostname="db"
+    depends_on:
+      - db
+
+
+
+  # service name: for PostgreSQL Database
+  db:
+    # this locates the postgres image on docker hub, it pulls down the version with the tag 10 alpine.
+    # alpine: the lightweight version of image.
+    image: postgres:10-alpine
+
+    # Environment Variables:
+      # if we look on docker hub at the postgres image, you can see all the available configuration options which can be passed in as Environment Variables.
+    # Setting up environment variables for the database name, username and the password that is created when our database service starts.
+    environment:
+      # Variables
+
+      # make sure that variable name is written exactly bec. this is setting that the Postgres Container is expecting when it starts.
+      - POSTGRES_DB=app
+
+      - POSTGRES_USER=postgres
+
+      # you wouldn't use the same password that you would use on a production system.
+      # what you do in a Production System is, on your build server or whatever is building your application like Gitlab CI/CD,
+      # Yous would then add an encrypted environment variable that overrides this when you push the app.
+      # not a good idea to commit any secret password or put private SSH keys or anything like that to your project bec. it is an insecure way.
+      - POSTGRES_PASSWORD=supersecretpassword
 
 
 

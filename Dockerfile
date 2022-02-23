@@ -23,8 +23,29 @@ ENV PYTHONUNBUFFERED 1
 # the "requirements.txt" on the docker image to "requirements.txt"
 COPY ./requirements.txt /requirements.txt
 
+# installing the postgreSQL client
+# it uses the package manager "apk" that comes with alpine
+# "add" = add a package
+# "--update" = update the registry before we add it.
+# "--no-cache" = on not store the registry index on our docker file bec. we really wanna minimize #extra files and packages that ar included in our docker container.
+# this is the best practice bec. it means that your docke container for your app has the smallest footprint possible
+# and also means that you don't include any extra dependencies or anything on your system which may cause unexpected side effects or make Security Vulnerabilities in your system.
+RUN apk add --update --no-cache postgresql-client
+
+# installing Temporary packages that need to be installed on the system while we run our "requirements.txt"
+# and then we can remove them after "requirements.txt" has run.
+# "--virtual" = sets up an alias for our dependencies that we can use to easily remove all those dependencies later.
+# ".tmp-build-deps" = Tempoary Build Dependencies
+# "gcc, libc-dev, linux-headers postgresql-dev" = Temporary dependencies.
+RUN apk add --update --no-cache --virtual .tmp-build-deps \
+    gcc libc-dev linux-headers postgresql-dev
+
 # what this does is it takes the requirements file that we've just copied and its installs it
 RUN pip install -r /requirements.txt
+
+# delete all temporary Dependencies.
+RUN apk del .tmp-build-deps
+
 
 # Next: we're gonna make a dir within our Docker Image that we can use to store our app source code.
 RUN mkdir /app
@@ -50,6 +71,11 @@ USER user
 
 
 
+
+
+
+
+
 ## Commands
 # 1. "docker build ."
     # => what it does is its says build whichever docker file is in the roout dir of our project that we 're currently in.
@@ -57,3 +83,6 @@ USER user
 # 2. "docker-compose run app"
     # => we're gonna run the command on the app
     # and anything after this command is gonna be the command that get run on the linux container that we created using our docker file.
+
+## Notes:
+    # 1. the Packagethat Django recommends for communicating between Django and POSTGRES is called "psycopg2"
