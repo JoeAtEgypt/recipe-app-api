@@ -28,6 +28,22 @@ class UserSerializer(serializers.ModelSerializer):
                           # which would be the JSON data that was made in the HTTP POST
         return get_user_model().objects.create_user(**validated_data)
 
+    # the purpose of this is we want to make sure the password is set using the "set_password" function
+    # instead of just setting it to whichever value is provided.
+    # "instance": is gonna be the model instance that is linked to our model serializer that's gonna b user object.
+    def update(self, instance, validated_data):
+        """ Update a user, setting the password correctly and return it. """
+        # the reason we provide "none" here is bec. with the pop function, you must provide a default value.
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+
+        if password:
+            user.set_password(password)
+            user.save()
+
+        return user
+
+
 
 class AuthTokenSerializer(serializers.Serializer):
     """ Serializer for the user authentication object """
