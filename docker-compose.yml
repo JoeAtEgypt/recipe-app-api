@@ -1,9 +1,3 @@
-## Docker Compose:
-# is a tool that allows us to run our docker image easily from our project location.
-# allows us to easily manage the different services that make up our project.
-    # for example: 1 service might be the Python App that we run and Another Service might be the Database.
-# is a YAML file that contains the configuration for all of the services that make up our project.
-
 # 1st line: is the version of Docker Compose that we're gonna ba writing our file for.
 version: "3"
 

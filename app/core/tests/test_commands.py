@@ -1,37 +1,3 @@
-## Mocking
-    # when you override or change the behaviour of the dependencies of the code that you're testing.
-    # used in:
-        # 1. avoid any unintended side-effects.
-        # 2. isolate the specific piece of code that we want to test.
-
-    # for Example: Imagine you're testing a function that sends an email.
-        # there are 2 good reasons that you wouldn't want to actually send an email every time you run your tests.
-            # 1st Reason: you should never write tests that depend on external services.
-                # bec. you can't guarantee that these services will available at the point that you run a test.
-                # and this will make the tests unpredictable and unreliable.
-            # 2nd Reason: you don't want to be sending spam emails each time you run your test suite
-                # even if you're a fake address, those emails would still be backing up on a server somewhere.
-
-        # when you write your test, you can use "Mocking" to avoid sending an actual email.
-        # You can override the function in the dependency that sends the email and replace it with a Mock Object.
-        # Using this Mock Object, we can avoid sending an actual email
-        # and instead just check that the function was called with the correct parameters.
-
-## Adding a management command:
-    # is a helper command that allows us to wait for the database to be available before continuing and adding other commands.
-    # the reason we need this command is bec. I find that sometimes when using Postgresql with docker compose in a django app,
-    # sometimes the django app fails to start bec. of database error.
-    # it turns out that this is bec. on the postgres services has started,
-    # there are a few extra setup tasks that need to be done on the postgres before it is ready to accept connections.
-        # what this means is that our django app will try and connect to our database before database is ready
-        # and therefore it will fail with an exception and you will need to restart the app.
-
-    # this will make our app a lot more reliable when running it locally as a development server
-    # and also if we ever deploy it as a production system.
-
-
-
-
 # Patch Function:
         # allows us to mock the behaviour of the Django get database function.
         # it basically simulate the database being available and not being available for when we test our command.

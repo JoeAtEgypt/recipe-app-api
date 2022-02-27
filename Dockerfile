@@ -1,8 +1,4 @@
 # 1st line of this file is the image that you're gonna inherit your docker file from.
-# with Docker, you can basically build images on top of other images.
-        # the benfit of this is that you can find an image that has pretty much everything that you need your project
-        # and then you can just add the customized bits that you need just for your specific product.
-
 # From Docker Hub
 FROM python:3.7-alpine
 # Apline Image is very light-weight and minimal image that runs python
@@ -83,6 +79,10 @@ USER user
 # 2. "docker-compose run app"
     # => we're gonna run the command on the app
     # and anything after this command is gonna be the command that get run on the linux container that we created using our docker file.
+# 3. "docker-compose run -rm app sh -c "python manage.py startapp user" "
+    # => "-rm": you can include this optionally on any commands that you want to run once and
+              # you don't want the docker container to linger on the system after it's ran.
+              # it removes the container and just keep the system a little cleaner so it doesn't fill up.
 
 ## Notes:
     # 1. the Packagethat Django recommends for communicating between Django and POSTGRES is called "psycopg2"

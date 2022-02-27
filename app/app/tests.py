@@ -20,8 +20,6 @@
 #             # 2. n Assertion: where you actually test the output and you confirm that the output = you expected it.
 #         self.assertEqual(add(3,8), 11)
 #
-# ## Test-driven Development
-#     # it is simply when you write the test before you write the code.
 #     def test_subtract_numbers(self):
 #         """ Test that values are subtracted and returned """
 #         self.assertEqual((subtract(5, 11)), 6)
