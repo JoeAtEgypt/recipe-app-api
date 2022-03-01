@@ -8,6 +8,12 @@ from django.test import TestCase
 # and everything is using the "get_user_model" function then that's easy to do bec. you just change it in the settings -
 # instead of having to change all the references to the user model.
 from django.contrib.auth import get_user_model
+from .. import models
+
+def sample_user(email='test@joeshak.com', password='testpass'):
+    """ Create a sample user """
+    return get_user_model().objects.create_user(email, password)
+
 
 class ModelTests(TestCase):
 
@@ -53,6 +59,13 @@ class ModelTests(TestCase):
         # "is_staff" is included in "PermissionsMixin"
         self.assertTrue(user.is_staff)
 
+    def test_tag_str(self):
+        """Test the tag string representation """
+        tag = models.Tag.objects.create(
+            user=sample_user(),
+            name='Vegan'
+        )
+        self.assertEqual(str(tag), tag.name)
 
 
 
