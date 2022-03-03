@@ -13,11 +13,13 @@ MAINTAINER Joe Web Developer
 # it prints them directly. and this avoid some complications with thd docker image when you're running your Python App.
 ENV PYTHONUNBUFFERED 1
 
+WORKDIR /recipe-app-api
+
 # Next: we're gonna install our dependencies
 # we're gonna store our dependencies in "requirements.txt" list
 # what this does is it says copy, from dir adjacent to Docker file(LOCAL),
 # the "requirements.txt" on the docker image to "requirements.txt"
-COPY ./requirements.txt /requirements.txt
+COPY requirements.txt /recipe-app-api/
 
 # installing the postgreSQL client
 # it uses the package manager "apk" that comes with alpine
@@ -37,23 +39,15 @@ RUN apk add --update --no-cache --virtual .tmp-build-deps \
     gcc libc-dev linux-headers postgresql-dev
 
 # what this does is it takes the requirements file that we've just copied and its installs it
-RUN pip install -r /requirements.txt
+RUN pip install -r requirements.txt
 
 # delete all temporary Dependencies.
 RUN apk del .tmp-build-deps
 
-
-# Next: we're gonna make a dir within our Docker Image that we can use to store our app source code.
-RUN mkdir /app
-# what this does is t creates an empty folder on our docker image called "app"
-
-WORKDIR /app
-# and then it switches to that as the default dir.
-# So any app we run, using our docker container, will run starting from this location unless we specify otherwise.
-
-COPY ./app /app
+COPY . /app
 # then what it does is it copies from our local machine "app" folder to "app" folder that we've created on an image.
 # This allows us to take the code that we cray in our products and copy it into our Docker image.
+
 
 # Next: we're gonna create a user that is gonna run our app using docker. (username="user")
 RUN adduser -D user

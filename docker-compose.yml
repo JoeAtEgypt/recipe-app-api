@@ -22,7 +22,7 @@ services:
     # it'll be automatically updated in the container and you don't need to restart Docker to get the changes into effect
     volumes:
       # mapping the "app" dir in local machine to "app" dir in our docker image
-      - ./app:/app
+      - .:/recipe-app-api
 
     # finally, we're gonna type the command that is used to run ou app in our docker container.
     command: >
