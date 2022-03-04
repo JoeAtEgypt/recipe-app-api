@@ -80,3 +80,21 @@ class Ingredient(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Recipe(models.Model):
+    """ Recipe object """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    time_minutes = models.IntegerField()
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+    link = models.CharField(max_length=255, blank=True)
+    # this string here, you can actually remove the quotes and just pass i the class directly.
+    # The issue with this is you would have to then have your classes in a correct order.
+    # So the Django has this useful feature where you can just provide the name of the class in a string
+    # and then it doesn't matter which order you place your models in.
+    ingredients = models.ManyToManyField('Ingredient')
+    tags = models.ManyToManyField('Tag')
+
+    def __str__(self):
+        return self.title
