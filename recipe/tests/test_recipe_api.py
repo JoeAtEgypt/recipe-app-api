@@ -5,13 +5,27 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Recipe
+from core.models import Recipe, Tag, Ingredient
 
-from recipe.serializers import RecipeSerializer
+from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
 
 # So the 1st bit (before ":") is the app
 # and the 2nd bit is the identifier of the URL in the app "" recipe-list
 RECIPES_URL = reverse('recipe:recipe-list')
+
+# the reason it's list is bec. you may have multiple arguments for a single URL.
+# we're gonna be using one so we just pass in a single item into our list.
+def detail_url(recipe_id):
+    """ Return recipe detail URL """
+    return reverse('recipe:recipe-detail', args=[recipe_id])
+
+def sample_tag(user, name='Main course'):
+    """ Create and return a sample tag """
+    return Tag.objects.create(user=user, name=name)
+
+def sample_ingredient(user, name='Cinnamon'):
+    """ Create and return a sample ingredient """
+    return Ingredient.objects.create(user=user, name=name)
 
 # New Concept of creating helper functions when we need repeated objects in our tests.
 def sample_recipe(user, **params):
@@ -83,6 +97,22 @@ class PrivateRecipeAPITest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data, serializer.data)
+
+    def test_view_recipe_detail(self):
+        """ Test viewing a recipe detail """
+        recipe = sample_recipe(user=self.user)
+        # (.add)this is how you add an item on a "ManyToManyField"
+        recipe.tags.add(sample_tag(user=self.user))
+        recipe.ingredients.add(sample_ingredient(user=self.user))
+
+        url = detail_url(recipe.id)
+        res = self.client.get(url)
+
+        serializer = RecipeDetailSerializer(recipe)
+
+        self.assertEqual(res.data, serializer.data)
+
+
 
 
 
