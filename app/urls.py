@@ -15,9 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/user/', include('user.urls')),
     path('api/recipe/', include('recipe.urls')),
-]
+    # Reference/URL for our media files
+    # By default the Django development server will serve static files for any dependencies in our project.
+    # it doesn't serve the media files by default, so you need to manually add this in the URLS.
+    # so what this does is it makes the media URL available in our development server
+    # so we can test uploading images without having to set up a separate web server for serving these media files.
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -132,7 +132,31 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
+# what we're gonna do is we're gonna configure the "static" URL and the "media" URL, The "static" roote and the "media" roote.
+# what we're setting here is that the static files will be served from "/static/" part of
+# our web server so if we go to our server(127.0.0.1:8000/static),
+# so anything on "/static/" will map to our static dirs and
+# anything in (127.0.0.1:8000/media) will map to our media files.
+# that way when we upload media files, we have an accessible URL,
+# so that we can access them through our web server.
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
+# it simply tells Django where to store all the media files.
+# we want all of the media files to be stored in "/vol/web/media" dir
+# that we create as part of our build process in our docker container
+MEDIA_ROOT = '/vol/web/media'
+
+# it is where all the static files will be dumped when the project is built.
+# So Django actually comes with a command called "collectstatic" files
+# and it collects all the static files from any dependency that we have.
+# and it combines them all and stores them in the "STATIC_ROOT",
+# so we can run this once starting our project and it will pull all of the CSS and JS that
+# are required for the Django rest_framework browsable API and for the Django Admin and
+# it will store them in this '/vol/web/static' dir.
+# that means when we're serving our project in production, we can access these static files
+# and we can view the Django admin just as we can view it in our local machine.
+STATIC_ROOT = '/vol/web/static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

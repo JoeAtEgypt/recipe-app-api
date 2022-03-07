@@ -1,7 +1,9 @@
 # Test 1: test that our helper function for our model can create a new user.
-        # we're gonna use the "create_user" function to create a user
-        # and then we're gonna to verify that user has been created as expected.
+# we're gonna use the "create_user" function to create a user
+# and then we're gonna to verify that user has been created as expected.
 from django.test import TestCase
+
+from unittest.mock import patch
 
 # You can the user model directly from the models.
 # but this is not recommended with django bec. at some point in the project, you may want to change what your user model is.
@@ -9,6 +11,7 @@ from django.test import TestCase
 # instead of having to change all the references to the user model.
 from django.contrib.auth import get_user_model
 from .. import models
+
 
 def sample_user(email='test@joeshak.com', password='testpass'):
     """ Create a sample user """
@@ -86,7 +89,24 @@ class ModelTests(TestCase):
 
         self.assertEqual(str(recipe), recipe.title)
 
+    # 'uuid4' = is a function within the 'uuid' module which will generate a unique 'uuid' version 4
+    @patch('uuid.uuid4')
+    def test_recipe_file_name_uuid(self, mock_uuid):
+        """Test that image is saved in the correct location"""
+        # that means anytime we call this uuid4 function that is
+        # triggered from within our test, it will change the value, override the default behaviour
+        # and return 'uuid' instead; this allows us to reliably test how our function works.
+        uuid = 'test-uuid'
+        mock_uuid.return_value = uuid
 
+        # 'recipe_image_file_path': it accepts 2 parameters
+        # 1. an instance
+        # 2. the file name of the original file which is being added.
+        # the reason we passed 'myimage.jpg' in bec. what we're gonna do is
+        # we're gonna remove this image part 'myimage' and replace it with the 'uuid' but we wanna kep the extension;
+        # as it maintains whatever file type is uploaded.
+        # so you can upload JPEGs or PNGs and so on.
+        file_path = models.recipe_image_file_path(None, 'myimage.jpg')
 
-
-
+        exp_path = f'uploads/recipe/{uuid}.jpg'
+        self.assertEqual(file_path, exp_path)

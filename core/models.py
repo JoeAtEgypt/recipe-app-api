@@ -2,10 +2,26 @@
     # holds all of the central code that is important to the rest of the sub apps that we create in our system
     # creates anything that is shared between 1 or more apps so things like the migrations and the database. (All in One Place)
 
+# A universally unique identifier (UUID) is a 128-bit "Encrypted" label used for information in computer systems.
+# this is the python 'uuid' package that lets us generate the 'uid'
+import uuid
+# this is used for 'os.path' to create a valid path for our file destination.
+import os
+
 from django.db import models
 # these ar all things that are required to extend the Django user model while making use of some of the features that come with the django user model out of the box.
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
+
+def recipe_image_file_path(instance, filename):
+    """ Generate file path for new recipe image """
+    # Slice the list and return the last item.(extension)
+    ext = filename.split('.')[-1]
+    filename = f'{uuid.uuid4()}.{ext}'
+
+    # we can simply join this up to the destination path that
+    # we want to store the file so we want to return.
+    return os.path.join('uploads/recipe/', filename)
 
 
 ## User Manager Class:
@@ -95,6 +111,11 @@ class Recipe(models.Model):
     # and then it doesn't matter which order you place your models in.
     ingredients = models.ManyToManyField('Ingredient')
     tags = models.ManyToManyField('Tag')
+    # we don't need to make '()' bec. we don't wanna actually call the function.
+    # we just wanna pass a reference to the function so it can be every time we upload.
+    # and it gets called in the background by Django by the image filled feature.
+    # we'll save the file.
+    image = models.FileField(null=True, upload_to=recipe_image_file_path)
 
     def __str__(self):
         return self.title
