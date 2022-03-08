@@ -51,9 +51,31 @@ class RecipeViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+    # Python doesn't have the concept of public and private functions.
+    # All functions are public functions.
+    # however what you can do is to provide an '_' before the name of the function
+    # this is the common convention when you wanna indicate that a function is intended to
+    # be private as you will still be able to call it as a public function.
+    def _params_to_ints(self, qs):
+        """Convert a list of string IDs to a list of integers"""
+        return [int(str_id) for str_id in qs.split(',')]
+
     def get_queryset(self):
         """ Retrieve the recipe for the authenticated user """
-        return self.queryset.filter(user=self.request.user)
+        tags = self.request.query_params.get('tags')
+        ingredients = self.request.query_params.get('ingredients')
+        queryset = self.queryset
+        if tags:
+            tag_ids = self._params_to_ints(tags)
+            # 'tags__id__in': thi is the Django syntax for filtering on foreign key objects.
+            # '__in': this is a function called 'in' in which basically says return all of
+            # tags where the ID is in this list that we provide 'tags_ids'.
+            queryset = queryset.filter(tags__id__in=tag_ids)
+        if ingredients:
+            ingredient_ids = self._params_to_ints(ingredients)
+            queryset = queryset.filter(ingredients__id__in=ingredient_ids)
+
+        return queryset.filter(user=self.request.user)
 
     # this is a function that's called to retrieve the serializer class for a particular request.
     def get_serializer_class(self):
