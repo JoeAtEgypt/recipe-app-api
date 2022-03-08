@@ -1,3 +1,11 @@
+# this is a Python function that allows you to generate temporary files
+# so what it does is it allows you to call a function which will then create
+# a temp file somewhere in the system and then you can remove that file after you've used it.
+import tempfile
+import os
+
+from PIL import Image
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -12,6 +20,11 @@ from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
 # So the 1st bit (before ":") is the app
 # and the 2nd bit is the identifier of the URL in the app "" recipe-list
 RECIPES_URL = reverse('recipe:recipe-list')
+
+
+def image_upload_url(recipe_id):
+    """ Return URL for recipe image upload """
+    return reverse('recipe:recipe-upload-image', args=[recipe_id])
 
 # the reason it's list is bec. you may have multiple arguments for a single URL.
 # we're gonna be using one so we just pass in a single item into our list.
@@ -209,3 +222,51 @@ class PrivateRecipeAPITest(TestCase):
         self.assertEqual(recipe.price, payload['price'])
         tags = recipe.tags.all()
         self.assertEqual(len(tags), 0)
+
+class RecipeImageUploadTests(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            'user@joeshak.com',
+            'testpass'
+        )
+        self.client.force_authenticate(self.user)
+        self.recipe = sample_recipe(user=self.user)
+
+    # 'teardown' function executes after the test is finished
+    def tearDown(self):
+        self.recipe.image.delete()
+
+    def test_upload_image_to_recipe(self):
+        """ Test uploading an email to recipe """
+        url = image_upload_url(self.recipe.id)
+
+        # we're gonna use context manager with our temp file . named temporary file.
+        # what this does is it creates a named temp file on the system at a random location.
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as ntf:
+            img = Image.new('RGB', (10, 10))
+            # since we have our named temporary file opened and referencable by 'ntf'
+            img.save(ntf, format='JPEG')
+            # it's way that Python reads files so bec. we've saved the file, it will be the seeking will
+            # be done to the end of the file so if you try to access it then it would just be blank
+            # bec. you've already read up to the end of the file.
+            # so Use this 'seek' function to set the pointer back to the beginning of the file.
+            ntf.seek(0)
+
+            # 'multipart': tells Django that we wanna make a multi-part form request which
+            # means a form that consists of data by default, it would just be a form that
+            # consists of a JSN object and we actually wanna post data.
+            res = self.client.post(url, {'image': ntf}, format='multipart')
+
+        self.recipe.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('image', res.data)
+        self.assertTrue(os.path.exists(self.recipe.image.path))
+
+    def test_upload_image_bad_request(self):
+        """ Test uploading an invalid image """
+        url = image_upload_url(self.recipe.id)
+        res = self.client.post(url, {'image': 'notimage'}, format='multipart')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

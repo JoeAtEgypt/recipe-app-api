@@ -32,7 +32,9 @@ COPY requirements.txt /recipe-app-api/
 # & Also Pillow Package requires some Linux packages to be installed before we can successfully compile
 # and install it using the "pip" package manager.
 # "jbeg-dev" adds the JBEG dev binaries to our docker file
-RUN apk add --update --no-cache postgresql-client jpeg-dev
+RUN apk add --update --no-cache postgresql-client jpeg-dev musl-dev zlib zlib-dev \
+    freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev \
+    openjpeg-dev tcl-dev tiff-dev tk-dev
 
 # installing Temporary packages that need to be installed on the system while we run our "requirements.txt"
 # and then we can remove them after "requirements.txt" has run.
@@ -42,9 +44,7 @@ RUN apk add --update --no-cache postgresql-client jpeg-dev
 # "musl-dev", "zlib", "zlib-dev" = I retrieved these packages from the "PYPI" page for the pillow dependencies.
             # so it outlines all the dependencies that you need to have installed before you can install requirement
 RUN apk add --update --no-cache --virtual .tmp-build-deps \
-    gcc libc-dev linux-headers postgresql-dev musl-dev zlib zlib-dev \
-    freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev \
-    openjpeg-dev tcl-dev tiff-dev tk-dev
+    gcc libc-dev linux-headers postgresql-dev
 
 # what this does is it takes the requirements file that we've just copied and its installs it
  RUN pip install -r requirements.txt

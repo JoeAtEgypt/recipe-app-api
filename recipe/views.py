@@ -1,4 +1,6 @@
-from rest_framework import viewsets, mixins
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import viewsets, mixins, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
@@ -59,10 +61,46 @@ class RecipeViewSet(viewsets.ModelViewSet):
         # "action" class variable which will contain the action that is being used for our current request
         if self.action == 'retrieve':
             return serializers.RecipeDetailSerializer
+        if self.action == 'upload_image':
+            return serializers.RecipeImageSerializer
 
         return self.serializer_class
 
     def perform_create(self, serializer):
         """ Create a new recipe """
         serializer.save(user=self.request.user)
+
+    # Now you define actions as functions in the viewset by default.
+    # It has these 'get_queryset', 'get_serializer_class', and 'perform_create', these are all
+    # default actions that we override so if we didn't override them then they will just perform
+    # the default action that the Django rest framework does.
+    # You can actually add Custom Action
+    # the way to add this is to use the '@action' decorator
+    # then you define the methods that your action is gonna accept, so the methods could be:
+    # POST, PUT, PATCH or GET.
+    # 'detail=True'= this means that the action will be for the detail
+    # the detail is a specific recipe detail
+    # 'url_path': that will be the path that is visible within the URL
+    # it will be 'recipe/id/upload-image'
+    @action(methods=['POST'], detail=True, url_path='upload-image')
+    def upload_image(self, request, pk=None):
+        """ Upload an image to a recipe """
+
+        # 'get_object': will get the default or the object that is being accessed based on the ID in the URL.
+        recipe = self.get_object()
+        serializer = self.get_serializer(
+            recipe,
+            data=request.data
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
 
